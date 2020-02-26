@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #include "event/holdsoftware.h"
+#include "event/hwndmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,9 +19,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     virtual ~MainWindow() override;
-
-    QString filterString();
-    void addSoftWare(QString title, HWND hwnd);
 
 private slots:
     /**
@@ -51,12 +49,9 @@ private slots:
     void on_end_record_clicked();
 
 private:
-    void open_yeShenMoNiQi();
-
-private:
     Ui::MainWindow  *ui;
     HoldSoftWare    *m_pHoldSoftWare;
-    QList<HWND>     m_listHwnd;
+    QList<TagWinWidget>     m_listWinWidget;
 
 public:
     static MainWindow   *s_pMainWindow;

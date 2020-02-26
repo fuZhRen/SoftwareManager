@@ -65,7 +65,10 @@ void HoldSoftWare::startRecord()
     if(m_currentWigId && m_timekeeping == 0)
     {
         m_msecond = 0;
-        m_listEventItem.clear();
+
+        m_eventFlow.clear();
+        m_eventFlow.listLoopItem.append(LoopItem());
+
         m_timekeeping = this->startTimer(TIMEKEEPING_INTERVAL);
         m_isRecord = true;
     }
@@ -83,7 +86,14 @@ void HoldSoftWare::endRecord()
         m_msecond = 0;
         m_pTimeButton->setText(QString::number(m_msecond));
         m_isRecord = false;
+
+        m_eventFlow.title = m_title;
     }
+}
+
+void HoldSoftWare::addNewLoop(uint times)
+{
+    m_eventFlow.listLoopItem.append(LoopItem(times));
 }
 
 void HoldSoftWare::mousePressEvent(QMouseEvent *event)
@@ -94,7 +104,6 @@ void HoldSoftWare::mousePressEvent(QMouseEvent *event)
         double yPercent = event->y()*1.0/this->height();
 
         EventItem eventItem;
-        eventItem.wigId = m_currentWigId;
 
         this->addSleepTime(eventItem);
 
@@ -103,10 +112,10 @@ void HoldSoftWare::mousePressEvent(QMouseEvent *event)
 
         if(m_isRecord)
         {
-            m_listEventItem.append(eventItem);
+            m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(eventItem);
+        EventManager::doEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -118,7 +127,6 @@ void HoldSoftWare::mouseReleaseEvent(QMouseEvent *event)
         double yPercent = event->y()*1.0/this->height();
 
         EventItem eventItem;
-        eventItem.wigId = m_currentWigId;
 
         this->addSleepTime(eventItem);
 
@@ -127,10 +135,10 @@ void HoldSoftWare::mouseReleaseEvent(QMouseEvent *event)
 
         if(m_isRecord)
         {
-            m_listEventItem.append(eventItem);
+            m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(eventItem);
+        EventManager::doEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -142,7 +150,6 @@ void HoldSoftWare::mouseMoveEvent(QMouseEvent *event)
         double yPercent = event->y()*1.0/this->height();
 
         EventItem eventItem;
-        eventItem.wigId = m_currentWigId;
 
         this->addSleepTime(eventItem);
 
@@ -151,10 +158,10 @@ void HoldSoftWare::mouseMoveEvent(QMouseEvent *event)
 
         if(m_isRecord)
         {
-            m_listEventItem.append(eventItem);
+            m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(eventItem);
+        EventManager::doEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -168,7 +175,6 @@ void HoldSoftWare::wheelEvent(QWheelEvent *event)
         double yPercent = event->y()*1.0/this->height();
 
         EventItem eventItem;
-        eventItem.wigId = m_currentWigId;
 
         this->addSleepTime(eventItem);
 
@@ -177,10 +183,10 @@ void HoldSoftWare::wheelEvent(QWheelEvent *event)
 
         if(m_isRecord)
         {
-            m_listEventItem.append(eventItem);
+            m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(eventItem);
+        EventManager::doEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -195,7 +201,6 @@ void HoldSoftWare::keyPressEvent(QKeyEvent *event)
     if(m_currentWigId)
     {
         EventItem eventItem;
-        eventItem.wigId = m_currentWigId;
 
         this->addSleepTime(eventItem);
 
@@ -204,10 +209,10 @@ void HoldSoftWare::keyPressEvent(QKeyEvent *event)
 
         if(m_isRecord)
         {
-            m_listEventItem.append(eventItem);
+            m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(eventItem);
+        EventManager::doEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -218,7 +223,6 @@ void HoldSoftWare::keyReleaseEvent(QKeyEvent *event)
     if(m_currentWigId)
     {
         EventItem eventItem;
-        eventItem.wigId = m_currentWigId;
 
         this->addSleepTime(eventItem);
 
@@ -227,10 +231,10 @@ void HoldSoftWare::keyReleaseEvent(QKeyEvent *event)
 
         if(m_isRecord)
         {
-            m_listEventItem.append(eventItem);
+            m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(eventItem);
+        EventManager::doEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -299,7 +303,7 @@ void HoldSoftWare::addSleepTime(EventItem &eventItem)
         {
             eventItem.sleepTime = SleepTime(true, static_cast<unsigned long>(ceil(m_msecond/1000.0)));
         }
-        m_listEventItem.append(eventItem);
+        m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         m_msecond = 0;
     }
 }

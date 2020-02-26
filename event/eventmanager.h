@@ -14,7 +14,7 @@ class EventManager
 public:
     static void screenShort(HWND wigId, const QString &fileName);
 
-    static void doEventItem(const EventItem &eventItem);
+    static void doEventItem(HWND wigId, const EventItem &eventItem);
 
 private:
 #ifdef WIN32

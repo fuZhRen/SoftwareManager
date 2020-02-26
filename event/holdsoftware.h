@@ -21,6 +21,9 @@ public:
     //结束记录
     void endRecord();
 
+    //新增循环记录
+    void addNewLoop(uint times);
+
 signals:
 
 protected:
@@ -61,7 +64,7 @@ private:
     //记录时间毫秒
     unsigned long   m_msecond;
     //记录操作
-    QList<EventItem>    m_listEventItem;
+    EventFlow    m_eventFlow;
     //是否正在记录
     bool    m_isRecord;
 };

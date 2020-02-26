@@ -16,20 +16,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    event/choosewinwidget.cpp \
     event/eventmanager.cpp \
     event/holdsoftware.cpp \
+    event/hwndmanager.cpp \
     event/taskmanager.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     event/EventStruct.h \
+    event/choosewinwidget.h \
     event/eventmanager.h \
     event/holdsoftware.h \
+    event/hwndmanager.h \
     event/taskmanager.h \
     mainwindow.h
 
 FORMS += \
+    event/choosewinwidget.ui \
     mainwindow.ui
 
 # Default rules for deployment.

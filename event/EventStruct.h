@@ -200,7 +200,6 @@ typedef struct ST_OpenSoftware
 
 typedef struct ST_EventItem
 {
-    HWND        wigId;
     EventType   eventType;
     QString     type1;
     QString     type2;
@@ -297,37 +296,42 @@ typedef struct ST_EventItem
 }EventItem;
 typedef QList<EventItem> ListEventItem;
 
+struct LoopItem
+{
+    uint times; //0时无限循环
+    ListEventItem listEventItem;
+
+    LoopItem(uint _times = 1)
+    {
+        times = _times;
+    }
+
+    QDataStream& operator<<(QDataStream &stream)
+    {
+        int length;
+        stream >> times >> length;
+        EventItem eventItem;
+        for(int i = 0; i < length; ++i)
+        {
+            eventItem << stream;
+            listEventItem.append(eventItem);
+        }
+        return stream;
+    }
+    QDataStream& operator>>(QDataStream &stream)
+    {
+        stream << times << listEventItem.length();
+        for(int i = 0; i < listEventItem.length(); ++i)
+        {
+            listEventItem[i] >> stream;
+        }
+        return stream;
+    }
+};
+
 typedef struct ST_EventFlow
 {
     QString title;
-
-    struct LoopItem
-    {
-        uint times; //0时无限循环
-        ListEventItem listEventItem;
-
-        QDataStream& operator<<(QDataStream &stream)
-        {
-            int length;
-            stream >> times >> length;
-            EventItem eventItem;
-            for(int i = 0; i < length; ++i)
-            {
-                eventItem << stream;
-                listEventItem.append(eventItem);
-            }
-            return stream;
-        }
-        QDataStream& operator>>(QDataStream &stream)
-        {
-            stream << times << listEventItem.length();
-            for(int i = 0; i < listEventItem.length(); ++i)
-            {
-                listEventItem[i] >> stream;
-            }
-            return stream;
-        }
-    };
 
     QList<LoopItem> listLoopItem;
 
@@ -351,6 +355,12 @@ typedef struct ST_EventFlow
             listLoopItem[i] >> stream;
         }
         return stream;
+    }
+
+    void clear()
+    {
+        title.clear();
+        listLoopItem.clear();
     }
 
 }EventFlow;

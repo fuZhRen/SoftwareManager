@@ -17,7 +17,7 @@ void EventManager::screenShort(HWND wigId, const QString &fileName)
     screen->grabWindow(WId(wigId)).save(fileName);
 }
 
-void EventManager::doEventItem(const EventItem &eventItem)
+void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
 {
     switch(eventItem.eventType)
     {
@@ -26,11 +26,11 @@ void EventManager::doEventItem(const EventItem &eventItem)
         UINT param1; WPARAM param2;
         EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
         LPRECT lpRect = new RECT;
-        if(GetWindowRect(eventItem.wigId, lpRect))
+        if(GetWindowRect(wigId, lpRect))
         {
             int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
             int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
-            SendMessageA(eventItem.wigId, param1, param2, MAKELPARAM(x, y));
+            SendMessageA(wigId, param1, param2, MAKELPARAM(x, y));
         }
     }
         break;
@@ -39,12 +39,12 @@ void EventManager::doEventItem(const EventItem &eventItem)
         UINT param1; WPARAM param2;
         EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param1, param2);
         LPRECT lpRect = new RECT;
-        if(GetWindowRect(eventItem.wigId, lpRect))
+        if(GetWindowRect(wigId, lpRect))
         {
             int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
             int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
-            SendMessageA(eventItem.wigId, param1, param2, MAKELPARAM(x, y));
-            SendMessageA(eventItem.wigId, WM_MOUSEMOVE, 0, MAKELPARAM(x, y));
+            SendMessageA(wigId, param1, param2, MAKELPARAM(x, y));
+            SendMessageA(wigId, WM_MOUSEMOVE, 0, MAKELPARAM(x, y));
         }
         delete lpRect;
     }
@@ -52,11 +52,11 @@ void EventManager::doEventItem(const EventItem &eventItem)
     case ET_MOUSE_MOVE:
     {
         LPRECT lpRect = new RECT;
-        if(GetWindowRect(eventItem.wigId, lpRect))
+        if(GetWindowRect(wigId, lpRect))
         {
             int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseMove.xPercent));
             int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseMove.yPercent));
-            SendMessageA(eventItem.wigId, WM_MOUSEMOVE, MK_LBUTTON, MAKELPARAM(x, y));
+            SendMessageA(wigId, WM_MOUSEMOVE, MK_LBUTTON, MAKELPARAM(x, y));
         }
         delete lpRect;
     }
@@ -64,32 +64,32 @@ void EventManager::doEventItem(const EventItem &eventItem)
     case ET_MOUSE_WHEEL:
     {
         LPRECT lpRect = new RECT;
-        if(GetWindowRect(eventItem.wigId, lpRect))
+        if(GetWindowRect(wigId, lpRect))
         {
             int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
             int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
-            SendMessageA(eventItem.wigId, WM_MOUSEWHEEL, MAKEWPARAM(0, eventItem.mouseWheel.wheelValue), MAKELPARAM(x, y));
+            SendMessageA(wigId, WM_MOUSEWHEEL, MAKEWPARAM(0, eventItem.mouseWheel.wheelValue), MAKELPARAM(x, y));
         }
         delete  lpRect;
     }
         break;
     case ET_KEY_PRESSED:
     {
-        PostMessageA(eventItem.wigId, WM_SYSKEYDOWN,
+        PostMessageA(wigId, WM_SYSKEYDOWN,
                      EventManager::keyToBYTE(eventItem.key),
                      0);
     }
         break;
     case ET_KEY_RELEASED:
     {
-        SendMessageA(eventItem.wigId, WM_SYSKEYUP,
+        SendMessageA(wigId, WM_SYSKEYUP,
                      EventManager::keyToBYTE(eventItem.key),
                      0);
     }
         break;
     case ET_WIDGET_SHORT:
     {
-        EventManager::screenShort(eventItem.wigId
+        EventManager::screenShort(wigId
                                   , QString(eventItem.widgetShort.baseName)
                                          + "."
                                          + QString(eventItem.widgetShort.suffix));

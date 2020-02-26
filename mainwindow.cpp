@@ -20,7 +20,7 @@
 #define RESIZE "RESIZE"
 
 //BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam);
-BOOL CALLBACK EnumChildWindowsProc(HWND hWnd, LPARAM lParam);
+//BOOL CALLBACK EnumChildWindowsProc(HWND hWnd, LPARAM lParam);
 
 MainWindow* MainWindow::s_pMainWindow = nullptr;
 
@@ -42,67 +42,16 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QString MainWindow::filterString()
-{
-    return ui->search_line_edit->text();
-}
-
-void MainWindow::addSoftWare(QString title, HWND hwnd)
-{
-    ui->show_software->addItem(title);
-    m_listHwnd.append(hwnd);
-}
-
-void MainWindow::open_yeShenMoNiQi()
-{
-//    m_process = new QProcess(this);
-//    QString sProgram = "E:/Program Files/Nox/bin/Nox.exe";
-//    m_process->setProgram(sProgram);
-
-//    MainWindow::S_WigId = (HWND)FindWindow(nullptr, L"夜神模拟器");
-//    qDebug() << MainWindow::S_WigId;
-}
-
-////EnumWindows回调函数，hwnd为发现的顶层窗口
-//BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
-//{
-//	if (GetParent(hWnd) == nullptr && IsWindowVisible(hWnd))  //判断是否顶层窗口并且可见
-//	{
-//		char WindowTitle[100] = { 0 };
-//		::GetWindowText(hWnd, WindowTitle, 100);
-//		printf("%s\n", WindowTitle);
-
-//		EnumChildWindows(hWnd, EnumChildWindowsProc, NULL); //获取父窗口的所有子窗口
-//		ok = false;
-//	}
-
-//	return true;
-//}
-
-//EnumChildWindows回调函数，hwnd为指定的父窗口
-BOOL CALLBACK EnumChildWindowsProc(HWND hWnd, LPARAM lParam)
-{
-    Q_UNUSED(lParam)
-
-    char WindowTitle[100] = { 0 };
-    ::GetWindowText(hWnd, LPWSTR(WindowTitle), 100);
-
-    QString title = QString::fromStdWString(LPWSTR(WindowTitle));
-
-    MainWindow *pWindow = MainWindow::s_pMainWindow;
-    if(title.contains(pWindow->filterString()))
-    {
-        pWindow->addSoftWare(title, hWnd);
-    }
-
-    return true;
-}
-
 void MainWindow::on_search_software_clicked()
 {
     ui->show_software->clear();
-    m_listHwnd.clear();
-    EnumChildWindows(nullptr, EnumChildWindowsProc, 0);
+    m_listWinWidget.clear();
+
+    m_listWinWidget = HwndManager::instance()->getWinWidget(ui->search_line_edit->text());
+    for(int i = 0; i < m_listWinWidget.length(); ++i)
+    {
+        ui->show_software->addItem(m_listWinWidget[i].title);
+    }
 }
 
 void MainWindow::on_mapping_clicked()
@@ -110,7 +59,7 @@ void MainWindow::on_mapping_clicked()
     if(ui->show_software->currentRow() > -1)
     {
         QString title = ui->show_software->currentItem()->text();
-        m_pHoldSoftWare->setWigId(m_listHwnd[ui->show_software->currentRow()], title);
+        m_pHoldSoftWare->setWigId(m_listWinWidget[ui->show_software->currentRow()].hwnd, title);
         m_pHoldSoftWare->show();
     }
 }
