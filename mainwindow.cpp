@@ -15,6 +15,7 @@
 #include <QWindow>
 
 #include "event/eventmanager.h"
+#include "event/taskmanager.h"
 
 #define MAIN_WINDW "MAIN_WINDW"
 #define RESIZE "RESIZE"
@@ -38,6 +39,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    while(m_listEvenFlow.length())
+    {
+        TaskManager *pManager = m_listTaskManager.takeFirst();
+        pManager->exit();
+        delete pManager;
+    }
     delete m_pHoldSoftWare;
     delete ui;
 }
@@ -86,10 +93,92 @@ void MainWindow::on_switchover_save_file_clicked()
 
 void MainWindow::on_begin_record_clicked()
 {
+    if(ui->save_task_file->text().isEmpty())
+    {
+        QMessageBox::information(nullptr, "警告", "未选择保存的文件!");
+        return;
+    }
     m_pHoldSoftWare->startRecord();
 }
 
 void MainWindow::on_end_record_clicked()
 {
-    m_pHoldSoftWare->endRecord();
+    m_pHoldSoftWare->endRecord(ui->save_task_file->text());
+}
+
+void MainWindow::on_add_loop_clicked()
+{
+    m_pHoldSoftWare->addNewLoop(static_cast<uint>(ui->loop_times->value()));
+}
+
+void MainWindow::on_open_task_file_clicked()
+{
+    if(m_listTaskManager.length() >= 10)
+    {
+        QMessageBox::information(nullptr, "提示", "本软件仅支持10个多开!");
+        return;
+    }
+    QString fileName = QFileDialog::getOpenFileName(nullptr, "", "", "Binary files(*.sv)");
+    QFile file(fileName);
+    if(file.open(QIODevice::ReadOnly))
+    {
+        EventFlow eventFlow;
+        QDataStream dataStream(&file);
+        eventFlow << dataStream;
+
+        TaskManager *pTaskManager = new TaskManager;
+        if(pTaskManager->setEventFlow(eventFlow))
+        {
+            m_listEvenFlow.append(eventFlow);
+            m_listTaskManager.append(pTaskManager);
+            ui->switchover_task->addItem(eventFlow.title);
+        }
+        else
+        {
+            delete pTaskManager;
+        }
+
+        file.close();
+    }
+    else
+    {
+        QMessageBox::information(nullptr, "错误", QString("打开文件'%1'失败！").arg(fileName));
+    }
+}
+
+void MainWindow::on_begin_task_clicked()
+{
+    int index = ui->switchover_task->currentIndex();
+    if(index != -1)
+    {
+        if(!m_listTaskManager[index]->isRunning())
+        {
+            m_listTaskManager[index]->start();
+        }
+    }
+}
+
+void MainWindow::on_end_task_clicked()
+{
+    int index = ui->switchover_task->currentIndex();
+    if(index != -1)
+    {
+        if(m_listTaskManager[index]->isRunning())
+        {
+            m_listTaskManager[index]->exit();
+        }
+    }
+}
+
+void MainWindow::on_restart_task_clicked()
+{
+    int index = ui->switchover_task->currentIndex();
+    if(index != -1)
+    {
+        if(m_listTaskManager[index]->isRunning())
+        {
+            m_listTaskManager[index]->exit();
+        }
+        m_listTaskManager[index]->setEventFlow(m_listEvenFlow[index]);
+    }
 }

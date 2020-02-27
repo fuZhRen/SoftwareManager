@@ -19,7 +19,7 @@ public:
     //开始记录
     void startRecord();
     //结束记录
-    void endRecord();
+    void endRecord(const QString &fileName);
 
     //新增循环记录
     void addNewLoop(uint times);
@@ -46,7 +46,7 @@ protected:
     virtual void resizeEvent(QResizeEvent *event) override;
 
 private:
-    void addSleepTime(EventItem &eventItem);
+    void addSleepTime();
 
 private:
     QPushButton *m_pTimeButton;

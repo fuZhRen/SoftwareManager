@@ -13,7 +13,7 @@ class TaskManager : public QThread
 public:
     explicit TaskManager(QObject *parent = nullptr);
 
-    void setEventFlow(const EventFlow &eventFlow);
+    bool setEventFlow(const EventFlow &eventFlow);
 
     EventFlow getListEventItem() const;
 

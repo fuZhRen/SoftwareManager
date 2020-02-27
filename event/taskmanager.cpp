@@ -16,10 +16,10 @@ TaskManager::TaskManager(QObject *parent)
     //
 }
 
-void TaskManager::setEventFlow(const EventFlow &eventFlow)
+bool TaskManager::setEventFlow(const EventFlow &eventFlow)
 {
     QMutexLocker locker(&m_mutex);
-    this->quit();
+    this->exit();
     m_eventFlow = eventFlow;
     m_wigId = nullptr;
     m_currentLoopItemIndex = -1;
@@ -37,6 +37,7 @@ void TaskManager::setEventFlow(const EventFlow &eventFlow)
         this->initLoopInfo();
 
         this->start();
+        return true;
     }
     else
     {
@@ -52,8 +53,10 @@ void TaskManager::setEventFlow(const EventFlow &eventFlow)
             this->initLoopInfo();
 
             this->start();
+            return true;
         }
     }
+    return false;
 }
 
 void TaskManager::run()

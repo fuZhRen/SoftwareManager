@@ -7,6 +7,7 @@
 #include <QScreen>
 #include <QPainter>
 #include <QDebug>
+#include <QMessageBox>
 
 #include <math.h>
 
@@ -20,7 +21,7 @@ HoldSoftWare::HoldSoftWare(QWidget *parent)
     , m_timekeeping(0)
     , m_isRecord(false)
 {
-    this->setWindowFlags(Qt::WindowStaysOnTopHint);
+//    this->setWindowFlags(Qt::WindowStaysOnTopHint);
 
     m_pTimeButton = new QPushButton(this);
     m_pTimeButton->setText("0");
@@ -74,7 +75,7 @@ void HoldSoftWare::startRecord()
     }
 }
 
-void HoldSoftWare::endRecord()
+void HoldSoftWare::endRecord(const QString &fileName)
 {
     if(m_isRecord)
     {
@@ -88,12 +89,33 @@ void HoldSoftWare::endRecord()
         m_isRecord = false;
 
         m_eventFlow.title = m_title;
+
+        QFile file(fileName);
+        if(file.open(QIODevice::WriteOnly))
+        {
+            QDataStream dataStream(&file);
+            m_eventFlow >> dataStream;
+            file.close();
+            QMessageBox::information(nullptr, "错误", "保存成功。");
+        }
+        else
+        {
+            QMessageBox::information(nullptr, "错误", QString("文件'%1'打开失败!").arg(fileName));
+        }
+    }
+    else
+    {
+        QMessageBox::information(nullptr, "错误", "当前未进行录制！");
     }
 }
 
 void HoldSoftWare::addNewLoop(uint times)
 {
-    m_eventFlow.listLoopItem.append(LoopItem(times));
+    if(m_isRecord)
+    {
+        this->addSleepTime();
+        m_eventFlow.listLoopItem.append(LoopItem(times));
+    }
 }
 
 void HoldSoftWare::mousePressEvent(QMouseEvent *event)
@@ -103,10 +125,9 @@ void HoldSoftWare::mousePressEvent(QMouseEvent *event)
         double xPercent = event->x()*1.0/this->width();
         double yPercent = event->y()*1.0/this->height();
 
+        this->addSleepTime();
+
         EventItem eventItem;
-
-        this->addSleepTime(eventItem);
-
         eventItem.eventType = ET_MOUSE_KEY_PRESSED;
         eventItem.mouseKey = MouseKey(event->button(), xPercent, yPercent);
 
@@ -126,10 +147,9 @@ void HoldSoftWare::mouseReleaseEvent(QMouseEvent *event)
         double xPercent = event->x()*1.0/this->width();
         double yPercent = event->y()*1.0/this->height();
 
+        this->addSleepTime();
+
         EventItem eventItem;
-
-        this->addSleepTime(eventItem);
-
         eventItem.eventType = ET_MOUSE_KEY_RELEASED;
         eventItem.mouseKey = MouseKey(event->button(), xPercent, yPercent);
 
@@ -149,10 +169,9 @@ void HoldSoftWare::mouseMoveEvent(QMouseEvent *event)
         double xPercent = event->x()*1.0/this->width();
         double yPercent = event->y()*1.0/this->height();
 
+        this->addSleepTime();
+
         EventItem eventItem;
-
-        this->addSleepTime(eventItem);
-
         eventItem.eventType = ET_MOUSE_MOVE;
         eventItem.mouseMove = MouseMove(xPercent, yPercent);
 
@@ -174,10 +193,9 @@ void HoldSoftWare::wheelEvent(QWheelEvent *event)
         double xPercent = event->x()*1.0/this->width();
         double yPercent = event->y()*1.0/this->height();
 
+        this->addSleepTime();
+
         EventItem eventItem;
-
-        this->addSleepTime(eventItem);
-
         eventItem.eventType = ET_MOUSE_WHEEL;
         eventItem.mouseWheel = MouseWheel(event->delta(), xPercent, yPercent);
 
@@ -200,10 +218,9 @@ void HoldSoftWare::keyPressEvent(QKeyEvent *event)
     }
     if(m_currentWigId)
     {
+        this->addSleepTime();
+
         EventItem eventItem;
-
-        this->addSleepTime(eventItem);
-
         eventItem.eventType = ET_KEY_PRESSED;
         eventItem.key = static_cast<Qt::Key>(event->key());
 
@@ -222,10 +239,9 @@ void HoldSoftWare::keyReleaseEvent(QKeyEvent *event)
 
     if(m_currentWigId)
     {
+        this->addSleepTime();
+
         EventItem eventItem;
-
-        this->addSleepTime(eventItem);
-
         eventItem.eventType = ET_KEY_RELEASED;
         eventItem.key = static_cast<Qt::Key>(event->key());
 
@@ -290,10 +306,11 @@ void HoldSoftWare::resizeEvent(QResizeEvent *event)
     m_pTimeButton->move(0, this->height() - m_pTimeButton->height());
 }
 
-void HoldSoftWare::addSleepTime(EventItem &eventItem)
+void HoldSoftWare::addSleepTime()
 {
     if(m_isRecord && m_msecond > 0)
     {
+        EventItem eventItem;
         eventItem.eventType = ET_SLEEP;
         if(m_msecond < 1000)
         {
@@ -301,7 +318,7 @@ void HoldSoftWare::addSleepTime(EventItem &eventItem)
         }
         else
         {
-            eventItem.sleepTime = SleepTime(true, static_cast<unsigned long>(ceil(m_msecond/1000.0)));
+            eventItem.sleepTime = SleepTime(false, static_cast<unsigned long>(ceil(m_msecond/1000.0)));
         }
         m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         m_msecond = 0;

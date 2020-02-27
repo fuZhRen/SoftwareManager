@@ -8,6 +8,8 @@
 #include "event/holdsoftware.h"
 #include "event/hwndmanager.h"
 
+class TaskManager;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -47,11 +49,25 @@ private slots:
      * @brief on_end_record_clicked:  结束记录
      */
     void on_end_record_clicked();
+    //增加循环记录
+    void on_add_loop_clicked();
+
+    //打开已存储的录制文件
+    void on_open_task_file_clicked();
+    //开始当前选择的任务
+    void on_begin_task_clicked();
+    //结束当前选择的任务
+    void on_end_task_clicked();
+    //重新开始当前任务
+    void on_restart_task_clicked();
 
 private:
     Ui::MainWindow  *ui;
     HoldSoftWare    *m_pHoldSoftWare;
     QList<TagWinWidget>     m_listWinWidget;
+
+    QList<EventFlow>        m_listEvenFlow;
+    QList<TaskManager*>     m_listTaskManager;
 
 public:
     static MainWindow   *s_pMainWindow;
