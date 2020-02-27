@@ -124,7 +124,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QPushButton" name="restart_task">
+            <widget class="QPushButton" name="pause_task">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -144,7 +144,7 @@
               </size>
              </property>
              <property name="text">
-              <string>重新开始</string>
+              <string>暂停任务</string>
              </property>
             </widget>
            </item>

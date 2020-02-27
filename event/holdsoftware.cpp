@@ -36,6 +36,18 @@ void HoldSoftWare::setWigId(const HWND &currentWigId, const QString &title)
 {
     if(m_currentWigId != currentWigId)
     {
+        if(m_isRecord)
+        {
+            if(QMessageBox::question(nullptr, "提示", "正在进行操作录制，是否关闭录制？") == QMessageBox::No)
+            {
+                return;
+            }
+            else if(m_timekeeping != 0)
+            {
+                this->killTimer(m_timekeeping);
+                m_timekeeping = 0;
+            }
+        }
         m_currentWigId = currentWigId;
         m_title = title;
 
@@ -43,7 +55,7 @@ void HoldSoftWare::setWigId(const HWND &currentWigId, const QString &title)
         m_msecond = 0;
         m_pTimeButton->setText(QString::number(m_msecond));
     }
-    else if(m_isRecord)
+    else if(m_isRecord && m_timekeeping == 0)
     {
         m_timekeeping = this->startTimer(TIMEKEEPING_INTERVAL);
     }
@@ -84,6 +96,9 @@ void HoldSoftWare::endRecord(const QString &fileName)
             this->killTimer(m_timekeeping);
             m_timekeeping = 0;
         }
+
+        this->addSleepTime();
+
         m_msecond = 0;
         m_pTimeButton->setText(QString::number(m_msecond));
         m_isRecord = false;

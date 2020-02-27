@@ -151,10 +151,7 @@ void MainWindow::on_begin_task_clicked()
     int index = ui->switchover_task->currentIndex();
     if(index != -1)
     {
-        if(!m_listTaskManager[index]->isRunning())
-        {
-            m_listTaskManager[index]->start();
-        }
+        m_listTaskManager[index]->start();
     }
 }
 
@@ -163,22 +160,15 @@ void MainWindow::on_end_task_clicked()
     int index = ui->switchover_task->currentIndex();
     if(index != -1)
     {
-        if(m_listTaskManager[index]->isRunning())
-        {
-            m_listTaskManager[index]->exit();
-        }
+        m_listTaskManager[index]->stop();
     }
 }
 
-void MainWindow::on_restart_task_clicked()
+void MainWindow::on_pause_task_clicked()
 {
     int index = ui->switchover_task->currentIndex();
     if(index != -1)
     {
-        if(m_listTaskManager[index]->isRunning())
-        {
-            m_listTaskManager[index]->exit();
-        }
-        m_listTaskManager[index]->setEventFlow(m_listEvenFlow[index]);
+        m_listTaskManager[index]->pause();
     }
 }

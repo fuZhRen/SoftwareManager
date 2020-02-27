@@ -75,7 +75,7 @@ void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
         break;
     case ET_KEY_PRESSED:
     {
-        PostMessageA(wigId, WM_SYSKEYDOWN,
+        SendMessageA(wigId, WM_SYSKEYDOWN,
                      EventManager::keyToBYTE(eventItem.key),
                      0);
     }

@@ -10,8 +10,9 @@ TaskManager::TaskManager(QObject *parent)
     : QThread(parent)
     , m_wigId(nullptr)
     , m_currentLoopItemIndex(-1)
-    , m_currentLoopIndex(0)
+    , m_currentLoopItemTimes(-1)
     , m_currentEventItemIndex(-1)
+    , m_state(0)
 {
     //
 }
@@ -19,11 +20,11 @@ TaskManager::TaskManager(QObject *parent)
 bool TaskManager::setEventFlow(const EventFlow &eventFlow)
 {
     QMutexLocker locker(&m_mutex);
-    this->exit();
+    this->stop();
     m_eventFlow = eventFlow;
     m_wigId = nullptr;
     m_currentLoopItemIndex = -1;
-    m_currentLoopIndex= 0;
+    m_currentLoopItemTimes = -1;
     m_currentEventItemIndex = -1;
 
     QList<TagWinWidget> listWinWidget = HwndManager::instance()->getWinWidget(m_eventFlow.title);
@@ -34,7 +35,6 @@ bool TaskManager::setEventFlow(const EventFlow &eventFlow)
     else if(listWinWidget.length() == 1)
     {
         m_wigId = listWinWidget.first().hwnd;
-        this->initLoopInfo();
 
         this->start();
         return true;
@@ -50,7 +50,6 @@ bool TaskManager::setEventFlow(const EventFlow &eventFlow)
         else
         {
             m_wigId = listWinWidget[index].hwnd;
-            this->initLoopInfo();
 
             this->start();
             return true;
@@ -65,90 +64,117 @@ void TaskManager::run()
     {
         return;
     }
-    m_currentEventItem = this->getFirstEventItem();
+    m_currentEventItem = this->getEventItem();
     while(m_currentEventItem.eventType != ET_NONE)
     {
         EventManager::doEventItem(m_wigId, m_currentEventItem);
         emit sglFinishedTask(m_currentEventItem.type1, m_currentEventItem.type2, m_currentEventItem.type3);
-        m_currentEventItem = this->getFirstEventItem();
+        if(m_state == 0 || m_state == 2)
+        {
+            return;
+        }
+        m_currentEventItem = this->getEventItem();
     }
 }
 
-EventItem TaskManager::getFirstEventItem()
+const EventItem &TaskManager::getEventItem()
 {
     QMutexLocker locker(&m_mutex);
-
-    //判断LoopItem序号和循环次数
-    if(m_currentLoopItemIndex > -1)
-    {
-        if(m_currentEventItemIndex < m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem.length() - 1) //未开始时
-        {
-            m_currentEventItemIndex++;
-            return m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem[m_currentEventItemIndex];
-        }
-        else if(m_currentEventItemIndex == m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem.length() - 1)
-        {
-            if(m_eventFlow.listLoopItem[m_currentLoopItemIndex].times == 0)
-            {
-                m_currentEventItemIndex = 0;
-                return m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem[m_currentEventItemIndex];
-            }
-            else if(m_currentLoopIndex < m_eventFlow.listLoopItem[m_currentLoopItemIndex].times)
-            {
-                m_currentLoopIndex++;
-                m_currentEventItemIndex = 0;
-                return m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem[m_currentEventItemIndex];
-            }
-            else if(m_currentLoopIndex == m_eventFlow.listLoopItem[m_currentLoopItemIndex].times)
-            {
-                while(m_currentLoopItemIndex < m_eventFlow.listLoopItem.length())
-                {
-                    m_currentLoopItemIndex++;
-                    m_currentLoopIndex = 1;
-                    if(m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem.length() > 0)
-                    {
-                        m_currentEventItemIndex = 0;
-                        return m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem[m_currentEventItemIndex];
-                    }
-                }
-            }
-        }
-    }
-
-    return EventItem();
+    return this->getNextEventItem();
 }
 
-bool TaskManager::initLoopInfo()
+const EventItem &TaskManager::getNextLoopItem()
 {
-    //执行的LoopItem序号更新
+    if(m_currentLoopItemIndex < -1)
+    {
+        m_currentLoopItemIndex = -1;
+    }
+
+    if(m_currentLoopItemIndex < m_eventFlow.listLoopItem.length() - 1)
+    {
+        m_currentLoopItemIndex++;
+        m_currentLoopItemTimes = -1;
+        return this->getNextTimes();
+    }
+    return m_eventItem;
+}
+
+const EventItem &TaskManager::getNextTimes()
+{
     if(m_currentLoopItemIndex < 0)
     {
-        if(m_eventFlow.listLoopItem.length() > m_currentLoopItemIndex)
-        {
-            m_currentLoopItemIndex = 0;
-        }
+        return this->getNextLoopItem();
     }
-
-    //执行的LoopItem循环次数序号更新
-    if(m_currentLoopItemIndex > -1)
+    if(m_currentLoopItemTimes < -1)
     {
-        if(m_currentLoopIndex == 0
-                && m_eventFlow.listLoopItem[m_currentLoopItemIndex].times > 0)
-        {
-            m_currentLoopIndex = 1;
-            return true;
-        }
-        else if(m_eventFlow.listLoopItem[m_currentLoopItemIndex].times == 0)
-        {
-            m_currentLoopIndex = 0;
-            return true;
-        }
+        m_currentLoopItemTimes = -1;
     }
 
-    return false;
+    if(m_currentLoopItemTimes < static_cast<int>(m_eventFlow.listLoopItem[m_currentLoopItemIndex].times))
+    {
+        m_currentLoopItemTimes++;
+        m_currentEventItemIndex = -1;
+        return this->getNextEventItem();
+    }
+    else if(m_eventFlow.listLoopItem[m_currentLoopItemIndex].times == 0)
+    {
+        m_currentEventItemIndex = -1;
+        return this->getNextEventItem();
+    }
+    return this->getNextLoopItem();
+}
+
+const EventItem &TaskManager::getNextEventItem()
+{
+    if(m_currentLoopItemIndex < 0)
+    {
+        return this->getNextLoopItem();
+    }
+    if(m_currentLoopItemTimes < 0)
+    {
+        return this->getNextTimes();
+    }
+
+    if(m_currentEventItemIndex < -1)
+    {
+        m_currentEventItemIndex = -1;
+    }
+
+    if(m_currentEventItemIndex < m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem.length() - 1)
+    {
+        m_currentEventItemIndex++;
+        return m_eventFlow.listLoopItem[m_currentLoopItemIndex].listEventItem[m_currentEventItemIndex];
+    }
+    else
+    {
+        return this->getNextTimes();
+    }
 }
 
 EventFlow TaskManager::getListEventItem() const
 {
     return m_eventFlow;
+}
+
+void TaskManager::pause()
+{
+    m_state = 2;
+}
+
+void TaskManager::stop()
+{
+    m_state = 0;
+
+    m_currentLoopItemIndex = -1;
+    m_currentLoopItemTimes = -1;
+    m_currentEventItemIndex = -1;
+}
+
+void TaskManager::start(QThread::Priority priority)
+{
+    m_state = 1;
+    if(!this->isRunning())
+    {
+        QThread::start(priority);
+    }
 }

@@ -58,8 +58,8 @@ private slots:
     void on_begin_task_clicked();
     //结束当前选择的任务
     void on_end_task_clicked();
-    //重新开始当前任务
-    void on_restart_task_clicked();
+    //暂停当前任务
+    void on_pause_task_clicked();
 
 private:
     Ui::MainWindow  *ui;
