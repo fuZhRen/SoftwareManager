@@ -112,7 +112,7 @@ void HoldSoftWare::endRecord(const QString &fileName)
             QDataStream dataStream(&file);
             m_eventFlow >> dataStream;
             file.close();
-            QMessageBox::information(nullptr, "错误", "保存成功。");
+            QMessageBox::information(nullptr, "提示", "保存成功。");
         }
         else
         {
@@ -436,11 +436,10 @@ void HoldSoftWare::clearMousePressed(ListEventItem::Iterator &pressedItr, ListEv
                 moveItr = instertSleepItr;
             }
 
-            ListEventItem::Iterator removeBegin = ++pressedItr;
-            --pressedItr;
+            ListEventItem::Iterator removeBegin = pressedItr;
+            ++removeBegin;
             listEventItem.erase(removeBegin, moveItr);
 
-            pressedItr = --moveItr;
             break;
         }
         ++moveItr;
@@ -460,11 +459,9 @@ void HoldSoftWare::clearKeyPressed(ListEventItem::Iterator &pressedItr, ListEven
                 pressedItr->eventType = ET_KEY_CLICKED;
                 ++moveItr;
 
-                ListEventItem::Iterator removeBegin = ++pressedItr;
-                --pressedItr;
+                ListEventItem::Iterator removeBegin = pressedItr;
+                ++removeBegin;
                 listEventItem.erase(removeBegin, moveItr);
-
-                pressedItr = --moveItr;
             }
             break;
         }

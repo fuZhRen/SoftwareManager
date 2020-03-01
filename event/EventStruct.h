@@ -231,6 +231,7 @@ typedef struct ST_EventItem
         {
         case ET_MOUSE_PRESSED:
         case ET_MOUSE_RELEASED:
+        case ET_MOUSE_CLICKED:
             this->mouseKey << stream;
             break;
         case ET_MOUSE_MOVE:
@@ -241,6 +242,7 @@ typedef struct ST_EventItem
             break;
         case ET_KEY_PRESSED:
         case ET_KEY_RELEASED:
+        case ET_KEY_CLICKED:
         {
             int key;
             stream >> key;
@@ -269,6 +271,7 @@ typedef struct ST_EventItem
         {
         case ET_MOUSE_PRESSED:
         case ET_MOUSE_RELEASED:
+        case ET_MOUSE_CLICKED:
             this->mouseKey >> stream;
             break;
         case ET_MOUSE_MOVE:
@@ -279,6 +282,7 @@ typedef struct ST_EventItem
             break;
         case ET_KEY_PRESSED:
         case ET_KEY_RELEASED:
+        case ET_KEY_CLICKED:
             stream << this->key;
             break;
         case ET_WIDGET_SHORT:

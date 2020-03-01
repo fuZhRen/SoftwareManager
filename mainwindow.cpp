@@ -42,8 +42,8 @@ MainWindow::~MainWindow()
     while(m_listEvenFlow.length())
     {
         TaskManager *pManager = m_listTaskManager.takeFirst();
-        pManager->exit();
-        delete pManager;
+        pManager->stop();
+        pManager->deleteLater();
     }
     delete m_pHoldSoftWare;
     delete ui;
