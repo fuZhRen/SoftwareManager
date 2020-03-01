@@ -104,6 +104,7 @@ void HoldSoftWare::endRecord(const QString &fileName)
         m_isRecord = false;
 
         m_eventFlow.title = m_title;
+        this->clearUpFlow();
 
         QFile file(fileName);
         if(file.open(QIODevice::WriteOnly))
@@ -143,7 +144,7 @@ void HoldSoftWare::mousePressEvent(QMouseEvent *event)
         this->addSleepTime();
 
         EventItem eventItem;
-        eventItem.eventType = ET_MOUSE_KEY_PRESSED;
+        eventItem.eventType = ET_MOUSE_PRESSED;
         eventItem.mouseKey = MouseKey(event->button(), xPercent, yPercent);
 
         if(m_isRecord)
@@ -165,7 +166,7 @@ void HoldSoftWare::mouseReleaseEvent(QMouseEvent *event)
         this->addSleepTime();
 
         EventItem eventItem;
-        eventItem.eventType = ET_MOUSE_KEY_RELEASED;
+        eventItem.eventType = ET_MOUSE_RELEASED;
         eventItem.mouseKey = MouseKey(event->button(), xPercent, yPercent);
 
         if(m_isRecord)
@@ -327,15 +328,151 @@ void HoldSoftWare::addSleepTime()
     {
         EventItem eventItem;
         eventItem.eventType = ET_SLEEP;
-        if(m_msecond < 1000)
-        {
-            eventItem.sleepTime = SleepTime(true, m_msecond);
-        }
-        else
-        {
-            eventItem.sleepTime = SleepTime(false, static_cast<unsigned long>(ceil(m_msecond/1000.0)));
-        }
+        eventItem.sleepTime = SleepTime(true, m_msecond);
         m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         m_msecond = 0;
     }
+}
+
+void HoldSoftWare::clearUpFlow()
+{
+    for(int i = 0; i < m_eventFlow.listLoopItem.length(); ++i)
+    {
+        this->clearUpLoop(m_eventFlow.listLoopItem[i]);
+    }
+}
+
+void HoldSoftWare::clearUpLoop(LoopItem &loopItem)
+{
+    ListEventItem::Iterator itr = loopItem.listEventItem.begin();
+    ListEventItem::Iterator endItr = loopItem.listEventItem.end();
+
+    while(itr != endItr)
+    {
+        if(itr->eventType == ET_MOUSE_PRESSED)
+        {
+            this->clearMousePressed(itr, endItr, loopItem.listEventItem);
+        }
+        else if(itr->eventType == ET_KEY_PRESSED)
+        {
+            this->clearKeyPressed(itr, endItr, loopItem.listEventItem);
+        }
+        ++itr;
+    }
+
+    itr = loopItem.listEventItem.begin();
+    endItr = loopItem.listEventItem.end();
+    while(itr != endItr)
+    {
+        if(itr->eventType == ET_SLEEP
+                && itr->sleepTime.unitIsMs == true
+                && itr->sleepTime.sleepTime > 1000)
+        {
+            itr->sleepTime.unitIsMs = false;
+            itr->sleepTime.sleepTime = static_cast<qint64>(ceil(itr->sleepTime.sleepTime/1000.0));
+        }
+        ++itr;
+    }
+}
+
+void HoldSoftWare::clearMousePressed(ListEventItem::Iterator &pressedItr, ListEventItem::Iterator &endItr, ListEventItem &listEventItem)
+{
+    qint64 sleepTime = 0;
+    double moveXPercent = 0, moveYPercent = 0;
+    ListEventItem::Iterator moveItr = pressedItr;
+    ++moveItr;
+    while(moveItr != endItr)
+    {
+        if(moveItr->eventType == ET_SLEEP)
+        {
+            sleepTime += moveItr->sleepTime.sleepTime;
+        }
+        else if(moveItr->eventType == ET_MOUSE_MOVE)
+        {
+            moveXPercent = moveItr->mouseMove.xPercent;
+            moveYPercent = moveItr->mouseMove.yPercent;
+        }
+        else if(moveItr->eventType == ET_MOUSE_RELEASED
+                && moveItr->mouseKey.mouseButton == pressedItr->mouseKey.mouseButton)
+        {
+
+            if(sleepTime < 300
+                    && this->pixelInterval(pressedItr->mouseKey.xPercent, pressedItr->mouseKey.yPercent
+                                           , moveItr->mouseKey.xPercent, moveItr->mouseKey.yPercent) < 4)
+            {
+                pressedItr->eventType = ET_MOUSE_CLICKED;
+                ++moveItr;
+            }
+            else
+            {
+                ListEventItem::Iterator sleepItr = moveItr;
+                --sleepItr;
+                if(sleepItr->eventType == ET_SLEEP)
+                {
+                    sleepTime -= (*sleepItr).sleepTime.sleepTime;
+                }
+                else
+                {
+                    ++sleepItr;
+                }
+
+                EventItem eventItem;
+                eventItem.eventType = ET_SLEEP;
+                if(sleepTime > 1000)
+                {
+                    eventItem.sleepTime = SleepTime(false, static_cast<qint64>(ceil(sleepTime/1000.0)));
+                }
+                else if(sleepTime > 0)
+                {
+                    eventItem.sleepTime = SleepTime(true, sleepTime);
+                }
+                ListEventItem::Iterator instertSleepItr = listEventItem.insert(sleepItr, eventItem);
+                sleepItr++;
+
+                eventItem.eventType = ET_MOUSE_MOVE;
+                eventItem.mouseMove = MouseMove(moveXPercent, moveYPercent);
+                listEventItem.insert(sleepItr, eventItem);
+
+                moveItr = instertSleepItr;
+            }
+
+            ListEventItem::Iterator removeBegin = ++pressedItr;
+            --pressedItr;
+            listEventItem.erase(removeBegin, moveItr);
+
+            pressedItr = --moveItr;
+            break;
+        }
+        ++moveItr;
+    }
+}
+
+void HoldSoftWare::clearKeyPressed(ListEventItem::Iterator &pressedItr, ListEventItem::Iterator &endItr, ListEventItem &listEventItem)
+{
+    ListEventItem::Iterator moveItr = pressedItr;
+    ++moveItr;
+    while(moveItr != endItr)
+    {
+        if(moveItr->eventType == ET_KEY_PRESSED)
+        {
+            if(moveItr->key == pressedItr->key)
+            {
+                pressedItr->eventType = ET_KEY_CLICKED;
+                ++moveItr;
+
+                ListEventItem::Iterator removeBegin = ++pressedItr;
+                --pressedItr;
+                listEventItem.erase(removeBegin, moveItr);
+
+                pressedItr = --moveItr;
+            }
+            break;
+        }
+        ++moveItr;
+    }
+}
+
+double HoldSoftWare::pixelInterval(double xPercent1, double yPercent1, double xPercent2, double yPercent2)
+{
+    return sqrt(pow(this->width()*(xPercent1 - xPercent2), 2) + pow(this->height()*(yPercent1 - yPercent2), 2));
 }

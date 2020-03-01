@@ -8,12 +8,14 @@
 enum EventType
 {
     ET_NONE,
-    ET_MOUSE_KEY_PRESSED,
-    ET_MOUSE_KEY_RELEASED,
+    ET_MOUSE_PRESSED,
+    ET_MOUSE_RELEASED,
+    ET_MOUSE_CLICKED,
     ET_MOUSE_MOVE,
     ET_MOUSE_WHEEL,
     ET_KEY_PRESSED,
     ET_KEY_RELEASED,
+    ET_KEY_CLICKED,
     ET_WIDGET_SHORT,
     ET_SLEEP,
     ET_OPEN_SOFTWARE,
@@ -84,7 +86,7 @@ typedef  struct ST_MouseMove
 
 typedef struct ST_MouseWheel
 {
-    int    wheelValue;   //是否为向前滚动
+    int    wheelValue;   //滚动值
     double xPercent;    //x相对位置比例
     double yPercent;    //y相对位置比例
 
@@ -153,7 +155,7 @@ typedef struct ST_SleepTime
         unitIsMs = true;
         sleepTime = 0;
     }
-    ST_SleepTime(bool _unitIsMs, unsigned long _sleepTime)
+    ST_SleepTime(bool _unitIsMs, qint64 _sleepTime)
     {
         unitIsMs = _unitIsMs;
         sleepTime = _sleepTime;
@@ -227,8 +229,8 @@ typedef struct ST_EventItem
         this->eventType = static_cast<EventType>(eventType);
         switch(this->eventType)
         {
-        case ET_MOUSE_KEY_PRESSED:
-        case ET_MOUSE_KEY_RELEASED:
+        case ET_MOUSE_PRESSED:
+        case ET_MOUSE_RELEASED:
             this->mouseKey << stream;
             break;
         case ET_MOUSE_MOVE:
@@ -265,8 +267,8 @@ typedef struct ST_EventItem
                   << this->type1 << this->type2 << this->type3;
         switch(this->eventType)
         {
-        case ET_MOUSE_KEY_PRESSED:
-        case ET_MOUSE_KEY_RELEASED:
+        case ET_MOUSE_PRESSED:
+        case ET_MOUSE_RELEASED:
             this->mouseKey >> stream;
             break;
         case ET_MOUSE_MOVE:

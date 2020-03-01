@@ -48,6 +48,14 @@ protected:
 private:
     void addSleepTime();
 
+    void clearUpFlow();
+    void clearUpLoop(LoopItem &loopItem);
+    void clearMousePressed(ListEventItem::Iterator &pressedItr, ListEventItem::Iterator &endItr, ListEventItem &listEventItem);
+    void clearKeyPressed(ListEventItem::Iterator &pressedItr, ListEventItem::Iterator &endItr, ListEventItem &listEventItem);
+
+    //计算像素间隔
+    double pixelInterval(double xPercent1, double yPercent1, double xPercent2, double yPercent2);
+
 private:
     QPushButton *m_pTimeButton;
 

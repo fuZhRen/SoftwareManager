@@ -21,7 +21,7 @@ void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
 {
     switch(eventItem.eventType)
     {
-    case ET_MOUSE_KEY_PRESSED:
+    case ET_MOUSE_PRESSED:
     {
         UINT param1; WPARAM param2;
         EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
@@ -34,7 +34,7 @@ void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
         }
     }
         break;
-    case ET_MOUSE_KEY_RELEASED:
+    case ET_MOUSE_RELEASED:
     {
         UINT param1; WPARAM param2;
         EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param1, param2);
@@ -47,6 +47,21 @@ void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
             SendMessageA(wigId, WM_MOUSEMOVE, 0, MAKELPARAM(x, y));
         }
         delete lpRect;
+    }
+        break;
+    case ET_MOUSE_CLICKED:
+    {
+        UINT param1, param3; WPARAM param2;
+        EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
+        EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param3, param2);
+        LPRECT lpRect = new RECT;
+        if(GetWindowRect(wigId, lpRect))
+        {
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
+            SendMessageA(wigId, param1|param3, param2, MAKELPARAM(x, y));
+            SendMessageA(wigId, WM_MOUSEMOVE, 0, MAKELPARAM(x, y));
+        }
     }
         break;
     case ET_MOUSE_MOVE:
@@ -66,9 +81,9 @@ void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
         LPRECT lpRect = new RECT;
         if(GetWindowRect(wigId, lpRect))
         {
-            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
-            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
-            SendMessageA(wigId, WM_MOUSEWHEEL, MAKEWPARAM(0, eventItem.mouseWheel.wheelValue), MAKELPARAM(x, y));
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseWheel.xPercent));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseWheel.yPercent));
+            ::SendMessageA(wigId, WM_MOUSEWHEEL, MAKEWPARAM(0, eventItem.mouseWheel.wheelValue), MAKELPARAM(x, y));
         }
         delete  lpRect;
     }
@@ -83,6 +98,13 @@ void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
     case ET_KEY_RELEASED:
     {
         SendMessageA(wigId, WM_SYSKEYUP,
+                     EventManager::keyToBYTE(eventItem.key),
+                     0);
+    }
+        break;
+    case ET_KEY_CLICKED:
+    {
+        SendMessageA(wigId, WM_SYSKEYDOWN|WM_SYSKEYUP,
                      EventManager::keyToBYTE(eventItem.key),
                      0);
     }
