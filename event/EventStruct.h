@@ -316,9 +316,9 @@ struct LoopItem
     {
         int length;
         stream >> times >> length;
-        EventItem eventItem;
         for(int i = 0; i < length; ++i)
         {
+            EventItem eventItem;
             eventItem << stream;
             listEventItem.append(eventItem);
         }
@@ -345,9 +345,9 @@ typedef struct ST_EventFlow
     {
         int length;
         stream >> title >> length;
-        LoopItem loopItem;
         for(int i = 0; i < length; ++i)
         {
+            LoopItem loopItem;
             loopItem << stream;
             listLoopItem.append(loopItem);
         }

@@ -10,7 +10,7 @@ TaskManager::TaskManager(QObject *parent)
     : QThread(parent)
     , m_wigId(nullptr)
     , m_currentLoopItemIndex(-1)
-    , m_currentLoopItemTimes(0)
+    , m_currentLoopItemTimes(1)
     , m_currentEventItemIndex(-1)
     , m_state(0)
 {
@@ -24,7 +24,7 @@ bool TaskManager::setEventFlow(const EventFlow &eventFlow)
     m_eventFlow = eventFlow;
     m_wigId = nullptr;
     m_currentLoopItemIndex = -1;
-    m_currentLoopItemTimes = 0;
+    m_currentLoopItemTimes = 1;
     m_currentEventItemIndex = -1;
 
     QList<TagWinWidget> listWinWidget = HwndManager::instance()->getWinWidget(m_eventFlow.title);
@@ -93,7 +93,7 @@ const EventItem &TaskManager::getNextLoopItem()
     if(m_currentLoopItemIndex < m_eventFlow.listLoopItem.length() - 1)
     {
         m_currentLoopItemIndex++;
-        m_currentLoopItemTimes = 0;
+        m_currentLoopItemTimes = 1;
         return this->getNextTimes();
     }
     return m_eventItem;
@@ -107,7 +107,7 @@ const EventItem &TaskManager::getNextTimes()
     }
     if(m_currentLoopItemTimes < 0)
     {
-        m_currentLoopItemTimes = 0;
+        m_currentLoopItemTimes = 1;
     }
 
     if(m_eventFlow.listLoopItem[m_currentLoopItemIndex].times == 0)
@@ -131,7 +131,7 @@ const EventItem &TaskManager::getNextEventItem()
     {
         return this->getNextLoopItem();
     }
-    if(m_currentLoopItemTimes < 0)
+    if(m_currentLoopItemTimes < 1)
     {
         return this->getNextTimes();
     }
@@ -167,7 +167,7 @@ void TaskManager::stop()
     m_state = 0;
 
     m_currentLoopItemIndex = -1;
-    m_currentLoopItemTimes = 0;
+    m_currentLoopItemTimes = 1;
     m_currentEventItemIndex = -1;
 }
 
