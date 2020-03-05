@@ -24,12 +24,12 @@ void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
     case ET_MOUSE_PRESSED:
     {
         UINT param1; WPARAM param2;
-        EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
+        EventManager::backstageMouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
         LPRECT lpRect = new RECT;
         if(GetWindowRect(wigId, lpRect))
         {
-            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
-            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xValue));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yValue));
             SendMessageA(wigId, param1, param2, MAKELPARAM(x, y));
         }
     }
@@ -37,12 +37,12 @@ void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
     case ET_MOUSE_RELEASED:
     {
         UINT param1; WPARAM param2;
-        EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param1, param2);
+        EventManager::backstageMouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param1, param2);
         LPRECT lpRect = new RECT;
         if(GetWindowRect(wigId, lpRect))
         {
-            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
-            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xValue));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yValue));
             SendMessageA(wigId, param1, param2, MAKELPARAM(x, y));
             SendMessageA(wigId, WM_MOUSEMOVE, 0, MAKELPARAM(x, y));
         }
@@ -52,13 +52,13 @@ void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
     case ET_MOUSE_CLICKED:
     {
         UINT param1, param3; WPARAM param2;
-        EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
-        EventManager::mouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param3, param2);
+        EventManager::backstageMouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1, param2);
+        EventManager::backstageMouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param3, param2);
         LPRECT lpRect = new RECT;
         if(GetWindowRect(wigId, lpRect))
         {
-            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xPercent));
-            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yPercent));
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseKey.xValue));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseKey.yValue));
             SendMessageA(wigId, param1|param3, param2, MAKELPARAM(x, y));
             SendMessageA(wigId, WM_MOUSEMOVE, 0, MAKELPARAM(x, y));
         }
@@ -69,8 +69,8 @@ void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
         LPRECT lpRect = new RECT;
         if(GetWindowRect(wigId, lpRect))
         {
-            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseMove.xPercent));
-            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseMove.yPercent));
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseMove.xValue));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseMove.yValue));
             SendMessageA(wigId, WM_MOUSEMOVE, MK_LBUTTON, MAKELPARAM(x, y));
         }
         delete lpRect;
@@ -81,8 +81,8 @@ void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
         LPRECT lpRect = new RECT;
         if(GetWindowRect(wigId, lpRect))
         {
-            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseWheel.xPercent));
-            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseWheel.yPercent));
+            int x = static_cast<int>(round((lpRect->right - lpRect->left)*eventItem.mouseWheel.xValue));
+            int y = static_cast<int>(round((lpRect->bottom - lpRect->top)*eventItem.mouseWheel.yValue));
             ::SendMessageA(wigId, WM_MOUSEWHEEL, MAKEWPARAM(0, eventItem.mouseWheel.wheelValue), MAKELPARAM(x, y));
         }
         delete  lpRect;
@@ -139,8 +139,90 @@ void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
     }
 }
 
+void EventManager::frontDoEventItem(const EventItem &eventItem)
+{
+    switch(eventItem.eventType)
+    {
+    case ET_MOUSE_PRESSED:
+    {
+        DWORD param;
+        EventManager::frontMouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param);
+        mouse_event(param, static_cast<DWORD>(eventItem.mouseKey.xValue)
+                    , static_cast<DWORD>(eventItem.mouseKey.yValue), 0, 0);
+    }
+        break;
+    case ET_MOUSE_RELEASED:
+    {
+        DWORD param;
+        EventManager::frontMouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param);
+        mouse_event(param, static_cast<DWORD>(eventItem.mouseKey.xValue)
+                    , static_cast<DWORD>(eventItem.mouseKey.yValue), 0, 0);
+    }
+        break;
+    case ET_MOUSE_CLICKED:
+    {
+        DWORD param1, param2;
+        EventManager::frontMouseKeyToDWORD(eventItem.mouseKey.mouseButton, true, param1);
+        EventManager::frontMouseKeyToDWORD(eventItem.mouseKey.mouseButton, false, param2);
+        mouse_event(param1|param2, static_cast<DWORD>(eventItem.mouseKey.xValue)
+                    , static_cast<DWORD>(eventItem.mouseKey.yValue), 0, 0);
+    }
+        break;
+    case ET_MOUSE_MOVE:
+    {
+        mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE
+                    , static_cast<DWORD>(eventItem.mouseMove.xValue)
+                    , static_cast<DWORD>(eventItem.mouseMove.yValue)
+                    , 0, 0);
+    }
+        break;
+    case ET_MOUSE_WHEEL:
+    {
+        mouse_event(MOUSEEVENTF_WHEEL, static_cast<DWORD>(eventItem.mouseWheel.xValue)
+                    , static_cast<DWORD>(eventItem.mouseWheel.yValue)
+                    , static_cast<DWORD>(eventItem.mouseWheel.wheelValue), 0);
+    }
+        break;
+    case ET_KEY_PRESSED:
+    {
+        keybd_event(EventManager::keyToBYTE(eventItem.key), 0, 0, 0);
+    }
+        break;
+    case ET_KEY_RELEASED:
+    {
+        keybd_event(EventManager::keyToBYTE(eventItem.key), 0, KEYEVENTF_KEYUP, 0);
+    }
+        break;
+    case ET_KEY_CLICKED:
+    {
+        keybd_event(EventManager::keyToBYTE(eventItem.key), 0, 0, 0);
+        keybd_event(EventManager::keyToBYTE(eventItem.key), 0, KEYEVENTF_KEYUP, 0);
+    }
+        break;
+    case ET_SLEEP:
+        if(eventItem.sleepTime.unitIsMs)
+        {
+            QThread::msleep(static_cast<unsigned long>(eventItem.sleepTime.sleepTime));
+        }
+        else
+        {
+            QThread::sleep(static_cast<unsigned long>(eventItem.sleepTime.sleepTime));
+        }
+        break;
+    case ET_OPEN_SOFTWARE:
+    {
+        QProcess process;
+        process.start(eventItem.openSoftware.path);
+        process.waitForStarted();
+    }
+        break;
+    default:
+        break;
+    }
+}
+
 #ifdef WIN32
-void EventManager::mouseKeyToDWORD(Qt::MouseButton key, bool pressed, UINT &param1, WPARAM &param2)
+void EventManager::backstageMouseKeyToDWORD(Qt::MouseButton key, bool pressed, UINT &param1, WPARAM &param2)
 {
     switch(key)
     {
@@ -180,6 +262,51 @@ void EventManager::mouseKeyToDWORD(Qt::MouseButton key, bool pressed, UINT &para
         else
         {
             param1 = WM_MBUTTONUP;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void EventManager::frontMouseKeyToDWORD(Qt::MouseButton key, bool pressed, DWORD &param)
+{
+    switch(key)
+    {
+    case Qt::LeftButton:
+    {
+        if(pressed)
+        {
+            param = MOUSEEVENTF_LEFTDOWN;
+        }
+        else
+        {
+            param = MOUSEEVENTF_LEFTUP;
+        }
+    }
+        break;
+    case Qt::RightButton:
+    {
+        if(pressed)
+        {
+            param = MOUSEEVENTF_RIGHTDOWN;
+        }
+        else
+        {
+            param = MOUSEEVENTF_RIGHTUP;
+        }
+    }
+        break;
+    case Qt::MidButton:
+    {
+        if(pressed)
+        {
+            param = MOUSEEVENTF_MIDDLEDOWN;
+        }
+        else
+        {
+            param = MOUSEEVENTF_MIDDLEUP;
         }
         break;
     }

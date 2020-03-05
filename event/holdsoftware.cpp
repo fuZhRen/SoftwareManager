@@ -389,16 +389,16 @@ void HoldSoftWare::clearMousePressed(ListEventItem::Iterator &pressedItr, ListEv
         }
         else if(moveItr->eventType == ET_MOUSE_MOVE)
         {
-            moveXPercent = moveItr->mouseMove.xPercent;
-            moveYPercent = moveItr->mouseMove.yPercent;
+            moveXPercent = moveItr->mouseMove.xValue;
+            moveYPercent = moveItr->mouseMove.yValue;
         }
         else if(moveItr->eventType == ET_MOUSE_RELEASED
                 && moveItr->mouseKey.mouseButton == pressedItr->mouseKey.mouseButton)
         {
 
             if(sleepTime < 300
-                    && this->pixelInterval(pressedItr->mouseKey.xPercent, pressedItr->mouseKey.yPercent
-                                           , moveItr->mouseKey.xPercent, moveItr->mouseKey.yPercent) < 4)
+                    && this->pixelInterval(pressedItr->mouseKey.xValue, pressedItr->mouseKey.yValue
+                                           , moveItr->mouseKey.xValue, moveItr->mouseKey.yValue) < 4)
             {
                 pressedItr->eventType = ET_MOUSE_CLICKED;
                 ++moveItr;

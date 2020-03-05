@@ -24,33 +24,43 @@ enum EventType
 typedef struct ST_MouseKey
 {
     Qt::MouseButton mouseButton;
-    double xPercent;    //x相对位置比例
-    double yPercent;    //y相对位置比例
+    /**
+     * @brief xValue: x值
+     * 后台操作时，表示位置比例
+     * 前台操作时，表示具体数值
+     */
+    double xValue;
+    /**
+     * @brief yValue: y值
+     * 后台操作时，表示位置比例
+     * 前台操作时，表示具体数值
+     */
+    double yValue;
 
     ST_MouseKey(Qt::MouseButton _mouseButton = Qt::LeftButton)
     {
         mouseButton = _mouseButton;
-        xPercent = 0;
-        yPercent = 0;
+        xValue = 0;
+        yValue = 0;
     }
     ST_MouseKey(Qt::MouseButton _mouseButton
-                , double _xPercent, double _yPercent)
+                , double _xValue, double _yValue)
     {
         mouseButton = _mouseButton;
-        xPercent = _xPercent;
-        yPercent = _yPercent;
+        xValue = _xValue;
+        yValue = _yValue;
     }
 
     QDataStream& operator<<(QDataStream &stream)
     {
         int mouseButton;
-        stream >> mouseButton >> this->xPercent >> this->yPercent;
+        stream >> mouseButton >> this->xValue >> this->yValue;
         this->mouseButton = static_cast<Qt::MouseButton>(mouseButton);
         return stream;
     }
     QDataStream& operator>>(QDataStream &stream)
     {
-        stream << this->mouseButton << this->xPercent << this->yPercent;
+        stream << this->mouseButton << this->xValue << this->yValue;
         return stream;
     }
 
@@ -58,28 +68,38 @@ typedef struct ST_MouseKey
 
 typedef  struct ST_MouseMove
 {
-    double xPercent;    //x相对位置比例
-    double yPercent;    //y相对位置比例
+    /**
+     * @brief xValue: x值
+     * 后台操作时，表示位置比例
+     * 前台操作时，表示具体数值
+     */
+    double xValue;
+    /**
+     * @brief yValue: y值
+     * 后台操作时，表示位置比例
+     * 前台操作时，表示具体数值
+     */
+    double yValue;
 
     ST_MouseMove()
     {
-        xPercent = 0;
-        yPercent = 0;
+        xValue = 0;
+        yValue = 0;
     }
-    ST_MouseMove(double _xPercent, double _yPercent)
+    ST_MouseMove(double _xValue, double _yValue)
     {
-        xPercent = _xPercent;
-        yPercent = _yPercent;
+        xValue = _xValue;
+        yValue = _yValue;
     }
 
     QDataStream& operator<<(QDataStream &stream)
     {
-        stream >> this->xPercent >> this->yPercent;
+        stream >> this->xValue >> this->yValue;
         return stream;
     }
     QDataStream& operator>>(QDataStream &stream)
     {
-        stream << this->xPercent << this->yPercent;
+        stream << this->xValue << this->yValue;
         return stream;
     }
 }MouseMove;
@@ -87,30 +107,40 @@ typedef  struct ST_MouseMove
 typedef struct ST_MouseWheel
 {
     int    wheelValue;   //滚动值
-    double xPercent;    //x相对位置比例
-    double yPercent;    //y相对位置比例
+    /**
+     * @brief xValue: x值
+     * 后台操作时，表示位置比例
+     * 前台操作时，表示具体数值
+     */
+    double xValue;
+    /**
+     * @brief yValue: y值
+     * 后台操作时，表示位置比例
+     * 前台操作时，表示具体数值
+     */
+    double yValue;
 
     ST_MouseWheel()
     {
         wheelValue = 120;
-        xPercent = 0;
-        yPercent = 0;
+        xValue = 0;
+        yValue = 0;
     }
-    ST_MouseWheel(int _wheelValue, double _xPercent, double _yPercent)
+    ST_MouseWheel(int _wheelValue, double _xValue, double _yValue)
     {
         wheelValue = _wheelValue;
-        xPercent = _xPercent;
-        yPercent = _yPercent;
+        xValue = _xValue;
+        yValue = _yValue;
     }
 
     QDataStream& operator<<(QDataStream &stream)
     {
-        stream >> this->wheelValue >> this->xPercent >> this->yPercent;
+        stream >> this->wheelValue >> this->xValue >> this->yValue;
         return stream;
     }
     QDataStream& operator>>(QDataStream &stream)
     {
-        stream << this->wheelValue << this->xPercent << this->yPercent;
+        stream << this->wheelValue << this->xValue << this->yValue;
         return stream;
     }
 }MouseWheel;
