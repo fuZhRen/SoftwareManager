@@ -67,7 +67,7 @@ void TaskManager::run()
     m_currentEventItem = this->getEventItem();
     while(m_currentEventItem.eventType != ET_NONE)
     {
-        EventManager::doEventItem(m_wigId, m_currentEventItem);
+        EventManager::backstageDoEventItem(m_wigId, m_currentEventItem);
         emit sglFinishedTask(m_currentEventItem.type1, m_currentEventItem.type2, m_currentEventItem.type3);
         if(m_state == 0 || m_state == 2)
         {

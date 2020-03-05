@@ -152,7 +152,7 @@ void HoldSoftWare::mousePressEvent(QMouseEvent *event)
             m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(m_currentWigId, eventItem);
+        EventManager::backstageDoEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -174,7 +174,7 @@ void HoldSoftWare::mouseReleaseEvent(QMouseEvent *event)
             m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(m_currentWigId, eventItem);
+        EventManager::backstageDoEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -196,7 +196,7 @@ void HoldSoftWare::mouseMoveEvent(QMouseEvent *event)
             m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(m_currentWigId, eventItem);
+        EventManager::backstageDoEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -220,7 +220,7 @@ void HoldSoftWare::wheelEvent(QWheelEvent *event)
             m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(m_currentWigId, eventItem);
+        EventManager::backstageDoEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -245,7 +245,7 @@ void HoldSoftWare::keyPressEvent(QKeyEvent *event)
             m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(m_currentWigId, eventItem);
+        EventManager::backstageDoEventItem(m_currentWigId, eventItem);
     }
 }
 
@@ -266,7 +266,7 @@ void HoldSoftWare::keyReleaseEvent(QKeyEvent *event)
             m_eventFlow.listLoopItem.last().listEventItem.append(eventItem);
         }
 
-        EventManager::doEventItem(m_currentWigId, eventItem);
+        EventManager::backstageDoEventItem(m_currentWigId, eventItem);
     }
 }
 

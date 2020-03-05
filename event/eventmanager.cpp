@@ -17,7 +17,7 @@ void EventManager::screenShort(HWND wigId, const QString &fileName)
     screen->grabWindow(WId(wigId)).save(fileName);
 }
 
-void EventManager::doEventItem(HWND wigId, const EventItem &eventItem)
+void EventManager::backstageDoEventItem(HWND wigId, const EventItem &eventItem)
 {
     switch(eventItem.eventType)
     {
