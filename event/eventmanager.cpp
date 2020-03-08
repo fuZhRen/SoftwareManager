@@ -213,7 +213,6 @@ void EventManager::frontDoEventItem(const EventItem &eventItem)
     {
         QProcess process;
         process.start(eventItem.openSoftware.path);
-        process.waitForStarted();
     }
         break;
     default:
