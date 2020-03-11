@@ -1,11 +1,11 @@
 #include "hwndmanager.h"
 
-BOOL CALLBACK EnumChildWindowsProc(HWND hWnd, LPARAM lParam)
+WINBOOL CALLBACK EnumChildWindowsProc(HWND hWnd, LPARAM lParam)
 {
     Q_UNUSED(lParam)
 
-    char WindowTitle[100] = { 0 };
-    ::GetWindowText(hWnd, LPWSTR(WindowTitle), 100);
+    char WindowTitle[512] = { 0 };
+    ::GetWindowText(hWnd, LPWSTR(WindowTitle), 512);
 
     QString title = QString::fromStdWString(LPWSTR(WindowTitle));
 
